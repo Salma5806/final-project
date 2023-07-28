@@ -3,8 +3,10 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 from django.utils import timezone
 import json
-# Create your models here.
+
+# Bilan model.
 class Bilan(models.Model):
+#Financial matrecis fields
     actif_immobilisé = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     stock = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     créances = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -28,8 +30,10 @@ class Bilan(models.Model):
     solvabilite_general_text = models.CharField(max_length=2000, default=0)
     capacite_de_remboursement_text = models.CharField(max_length=2000, default=0)
     autonomie_financiere_text = models.CharField(max_length=2000, default=0)
-
+   
+    # Save Method Override
     def save(self, *args, **kwargs):
+    # Calculate financial metrics before saving
         self.passif = self.calculate_passif()
         self.actif = self.calculate_actif()
         self.fond_de_roulement = self.calculate_fond_de_roulement()
@@ -46,7 +50,7 @@ class Bilan(models.Model):
 
         super().save(*args, **kwargs)
 
-
+    # Financial calculation
     def calculate_passif(self):
         try:
             capitaux_propre = float(self.capitaux_propre)
@@ -58,7 +62,7 @@ class Bilan(models.Model):
         except (ValueError, TypeError):
             pass
         return 0
-
+    # Clculation logic
     def calculate_actif(self):
         try:
             actif_immobilisé = float(self.actif_immobilisé)
@@ -71,7 +75,7 @@ class Bilan(models.Model):
         except (ValueError, TypeError):
             pass
         return 0
-
+    # Clculation logic
     def calculate_fond_de_roulement(self):
         try:
             capitaux_propre = float(self.capitaux_propre)
@@ -83,7 +87,7 @@ class Bilan(models.Model):
         except (ValueError, TypeError):
             pass
         return 0
-
+    # Clculation logic
     def calculate_besoin_de_fond_roulement(self):
         try:
             stock = float(self.stock)
@@ -95,7 +99,7 @@ class Bilan(models.Model):
         except (ValueError, TypeError):
             pass
         return 0                    
-    
+    # Clculation logic
     def calculate_tresorie_net(self):
         try:
             fond_de_roulemnt = float(self.fond_de_roulement)
@@ -107,7 +111,7 @@ class Bilan(models.Model):
             pass
         return 0
 
-    
+    # Clculation logic
     def calculate_financement_permanent(self):
         try:
             actif_immobilisé = float(self.actif_immobilisé)
@@ -120,7 +124,7 @@ class Bilan(models.Model):
             pass
         return 0
 
-    
+    # Clculation logic
     def calculate_autonomie_financiere(self):
         try:
             dette_de_financement = float(self.dette_de_financement)
@@ -132,7 +136,7 @@ class Bilan(models.Model):
             pass
         return 0
 
-    
+    # Clculation logic
     def calculate_solvabilite_general(self):
         try:
             actif = float(self.actif)
@@ -145,7 +149,7 @@ class Bilan(models.Model):
             pass
         return 0
 
-    
+    # Clculation logic
     def calculate_capacite_de_remboursement(self):
         try:
             dette_de_financement = float(self.dette_de_financement)
@@ -156,38 +160,39 @@ class Bilan(models.Model):
         except (ValueError, TypeError):
             pass
         return 0
-    
+    # Comment methods
     def commentaire_financement_permanent(self):
         financement_permanent = float(self.financement_permanent)
         if financement_permanent < 1:
             return "Financement Permanent < 0: l'entreprise ne dispose pas d'un équilibre"
         else:
             return "Financement permanent > 0: l'actif immobilisé est financé par les capitaux propres et l'entreprise possède des capitaux permanents supplémentaires pour financer des besoins d'exploitation."
+    # Comment logic
     def commentaire_autonomie_financiére(self):
         autonomie_financiére = float(self.autonomie_financiere)
         if autonomie_financiére > 0.5:
             return "l'entreprise est indépendant vis-à-vis de ses créancier"
         else:
             return "l'entreprise est en manque de capitaux."
-
+    # Comment logic
     def commentaire_solvabilité_géneral(self):
         solvabilité_géneral = float(self.solvabilite_general)
         if solvabilité_géneral > 1:
             return "l'entreprise est solvable."
         else:
             return "l'entreprise n'est pas solvable."
-
+    # Comment logic
     def commentaire_capacité_de_remboursement(self):
         capacite_de_remboursement = float(self.capacite_de_remboursement)
         if capacite_de_remboursement > 1 :
             return "l'entreprise peut rembourser ses dette "
         else:
             return "les revenus disponibles ne suffisent pas à couvrir vos dépenses de remboursement."           
-    
+    # Other comment method    
     class Meta:
         ordering = ['-date']
 
-        
+    # Type Model        
 class Type(models.Model):
     name = models.CharField(max_length=255) 
     def __str__(self):
